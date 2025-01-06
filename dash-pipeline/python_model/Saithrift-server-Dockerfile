@@ -1,0 +1,138 @@
+# Use a base image with Ubuntu
+FROM ubuntu:22.04
+
+# Set environment variables to avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update package lists and install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    wget \
+    g++ \
+    python2.7 \
+    python3-pip \
+    libboost-all-dev \
+    doxygen \
+    cmake \
+    git \
+    libssl-dev \
+    libboost-system-dev \
+    libboost-filesystem-dev \
+    libboost-thread-dev \
+    bison \
+    flex \
+    autoconf automake libtool flex bison pkg-config g++ libssl-dev \
+    libsasl2-dev libboost-all-dev libevent-dev \
+    libgrpc++-dev \
+    libprotobuf-dev \
+    libgrpc-dev \
+    libcrypto++-dev  libc6 \
+    libpthread-stubs0-dev libthrift-dev \
+    vim \
+    protobuf-compiler \
+    libssl3 \
+    #libpiprotogrpc-dev \
+    libprotobuf23 \
+    g++ git unzip \
+    curl \
+    #libprotobuf-lite10 \
+    libprotobuf-java \
+    libgrpc-dev \
+    && apt-get clean 
+
+# Add Bazel repository and install Bazel
+# RUN curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > /usr/share/keyrings/bazel-archive-keyring.gpg && \
+#    echo "deb [signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list && \
+#   apt-get update && apt-get install -y bazel && apt-get clean
+
+
+# install protobuf 29
+# RUN git config --global http.postBuffer 524288000 && \
+#    git clone --depth 1 --branch v29.2 https://github.com/protocolbuffers/protobuf.git && \
+#    cd protobuf && \
+#    git submodule update --init --depth 1 --recursive && \
+#    bazel build  --enable_bzlmod //:protobuf_shared && \
+#    cp bazel-bin/protoc /usr/local/bin && \
+#    cp bazel-bin/libprotobuf.so.29 /lib/x86_64-linux-gnu/
+
+
+# Install Python 2.7 if needed
+RUN wget https://bootstrap.pypa.io/pip/2.7/get-pip.py && \
+    python2.7 get-pip.py
+
+# Install necessary Python packages
+RUN pip2 install setuptools
+RUN pip2 install ctypesgen
+
+# Install Thrift 0.11.0 from source
+RUN wget http://archive.apache.org/dist/thrift/0.11.0/thrift-0.11.0.tar.gz && \
+    tar -xvzf thrift-0.11.0.tar.gz && \
+    cd thrift-0.11.0 && \
+    ./configure --with-java=no --with-php=no --prefix=/usr && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf thrift-0.11.0 thrift-0.11.0.tar.gz
+#COPY SAI/rpc /cb
+
+
+COPY SAI/rpc/ /usr/lib
+
+# Install ctypesgen
+RUN pip install ctypesgen
+
+# Copy the source files (including saiserver.cpp, thrift files, etc.) to the container
+COPY SAI/SAI/inc /usr/include/sai
+COPY SAI/SAI/test/saithriftv2/ /app
+COPY SAI/SAI/ /app
+
+COPY SAI/SAI/experimental/* /usr/include/sai/
+#COPY SAI/SAI /bb
+
+# Copy the SAI library headers into the container
+#COPY SAI/ /bb/
+
+# Add the SAI library path to the linker search paths
+ENV CPLUS_INCLUDE_PATH=/usr/include/sai:$CPLUS_INCLUDE_PATH
+
+#WORKDIR /bb/debian
+
+#RUN make all 
+
+#ENV LD_LIBRARY_PATH=/bb/debian/libsai_1.0.0_amd64/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+#COPY SAI/debian/libsai_1.0.0_amd64/usr/lib/x86_64-linux-gnu/ /usr/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/lib/x86_64-linux-gnu
+COPY SAI/debian /aa
+COPY SAI/debian/libsai-dev_1.0.0_amd64/usr/include/sai /usr/include/sai
+
+#COPY /usr/lib/x86_64-linux-gnu/libprotobuf.so /usr/lib/x86_64-linux-gnu/libprotobuf.so.29
+WORKDIR /usr/lib/x86_64-linux-gnu/
+RUN cp libprotobuf.so libprotobuf.so.29
+
+RUN apt-get update && \
+    dpkg -i /aa/libsai_1.0.0_amd64.deb && \
+    apt-get install -f -y && \
+    dpkg -i /aa/libsai-dev_1.0.0_amd64.deb && \
+    apt-get install -f -y && \
+    dpkg -l | grep -q libsai || (echo "libsai installation failed" && exit 1)
+
+# Set the working directory
+WORKDIR /app/
+
+# Build the project using make
+
+
+# Ensure libsai is installed before proceeding to make
+RUN dpkg -l | grep -q libsai || (echo "libsai installation failed" && exit 1)
+
+RUN python3 setup.py install
+
+# Clean and build the project
+RUN make
+#RUN ./saiserver
+
+
+# libprotobuf.so.29
+# libpiprotobuf.so.0
+# libpiprotogrpc.so.0
+# libgrpc++.so.1.43

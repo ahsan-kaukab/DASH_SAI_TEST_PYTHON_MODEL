@@ -1,0 +1,32 @@
+FROM sonicdash.azurecr.io/dash-bmv2-bldr:beeeda3f7ae
+
+# Switch to root user for installation
+USER root
+
+# Install Python 3.10 and dependencies
+RUN apt-get update && apt-get install -y software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y python3.10 python3.10-distutils python3.10-dev \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 \
+    && apt-get install -y curl \
+    && apt-get install -y git
+
+# Install pip for Python 3.10
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
+
+# Verify pip installation and upgrade it
+RUN python3.10 -m pip install --upgrade pip
+
+# Install required Python modules
+RUN python3.10 -m pip install bitarray scapy
+#RUN python3.10 -m pip install git+https://github.com/your-repo/sai_thrift.git
+
+# Set environment variables
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+# Set work directory
+WORKDIR /etc/dash/py
+
+# Default command
+CMD ["bash"]

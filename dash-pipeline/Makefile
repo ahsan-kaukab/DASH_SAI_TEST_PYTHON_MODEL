@@ -103,10 +103,12 @@ sai-submodule:
 # P4 Source code compile TARGETS
 ######################################
 
-P4_SRC=$(wildcard bmv2/**/*.p4) $(wildcard bmv2/*.h)
+P4_SRC=$(wildcard bmv2/**/*.p4)
 P4_MAIN=bmv2/dash_pipeline.p4
 P4_OUTDIR=bmv2/dash_pipeline.bmv2
 P4_ARTIFACTS=$(P4_OUTDIR)/dash_pipeline.json $(P4_OUTDIR)/dash_pipeline_p4rt.txt
+
+PY_SRC_DIR=python_model
 
 p4: $(P4_ARTIFACTS)
 
@@ -329,6 +331,20 @@ run-switch: network
 		--log-console \
 		--no-p4
 
+# run-switch: network
+# 	docker build -f $(PWD)/$(PY_SRC_DIR)/Dockerfile -t dash-bmv2-python3.10 .
+# 	$(DOCKER_RUN) \
+# 		--name simple_switch-$(USER) \
+# 		-u root \
+# 		-v $(PWD)/$(PY_SRC_DIR):/etc/dash/py dash-bmv2-python3.10 python3 /etc/dash/py/__model_server.py \
+# 		$(DOCKER_BMV2_RUN_IMG) \
+# 		env LD_LIBRARY_PATH=/usr/local/lib \
+# 		--interface 0@veth0 \
+#  		--interface 1@veth2 \
+#  		--log-console \
+#  		--no-p4
+
+
 kill-switch:
 	-docker kill simple_switch-$(USER)
 
@@ -349,15 +365,38 @@ DOCKER_RUN_SAITHRIFT_SRVR =\
 	--name dash-saithrift-server-$(USER) \
 	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
 	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
+	-v $(PWD)/SAI/SAI/inc:/usr/include/sai \
 	-v $(PWD)/SAI:/SAI \
 	-v $(PWD)/SAI/SAI/meta:/meta \
-	-w /SAI/rpc/usr/sbin \
+	-w /SAI/SAI/test/saithriftv2 \
 	-e LD_LIBRARY_PATH=/SAI/lib:/usr/local/lib \
 	$(DOCKER_SAITHRIFT_BLDR_IMG)
+	#-w /SAI/rpc/usr/sbin \
+
+
+# DOCKER_RUN_SAITHRIFT_SRVR =\
+# 	docker run \
+# 	--rm \
+# 	$(DOCKER_FLAGS) \
+# 	--net=host \
+# 	--name dash-saithrift-server-$(USER) \
+# 	saiserver-builder /bin/bash
+# 	-v $(PWD)/SAI:/SAI \
+# 	-v $(PWD)/SAI/SAI/meta:/meta \
+# 	-w /SAI/rpc/usr/sbin \
+# 	-e LD_LIBRARY_PATH=/SAI/lib:/usr/local/lib \
+# 	$(DOCKER_SAITHRIFT_BLDR_IMG)
+	#-v $(PWD)/$(PY_SRC_DIR):/etc/dash/py dash-bmv2-python3.10 python3 /etc/dash/py/__model_server.py \
 
 run-saithrift-server:
+	#docker build -f $(PWD)/$(PY_SRC_DIR)/Saithrift-server-Dockerfile -t saiserver-builder .
 	$(DOCKER_RUN_SAITHRIFT_SRVR) \
-	bash -c './saiserver'
+	#bash -c './saiserver'
+	#bash -c 'sudo cp -r /SAI/SAI/experimental/* /usr/include/sai/'
+	#bash -c 'cd /app'
+	#bash -c 'make'
+	#bash -c 'cd /SAI/SAI/test/saithriftv2'
+	#bash -c 'python3 /etc/dash/py/__model_server_2.py'
 
 kill-saithrift-server:
 	-docker kill dash-saithrift-server-$(USER)
