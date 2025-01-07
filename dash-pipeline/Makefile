@@ -391,14 +391,10 @@ DOCKER_RUN_SAITHRIFT_SRVR =\
 run-saithrift-server:
 	#docker build -f $(PWD)/$(PY_SRC_DIR)/Saithrift-server-Dockerfile -t saiserver-builder .
 	$(DOCKER_RUN_SAITHRIFT_SRVR) \
-	#bash -c 'sudo make clean & sudo make sai_server' \
-	#bash -c 'sudo make sai_server'
-	#bash -c './saiserver'
-	#bash -c 'sudo cp -r /SAI/SAI/experimental/* /usr/include/sai/'
-	#bash -c 'cd /app'
-	#bash -c 'make'
-	#bash -c 'cd /SAI/SAI/test/saithriftv2'
-	#bash -c 'python3 /etc/dash/py/__model_server_2.py'
+	#bash -c 'sudo make clean && sudo make sai_server'
+	#bash -c 'echo "/SAI/SAI/meta" | sudo tee /etc/ld.so.conf.d/sai.conf'
+	#bash -c 'sudo ldconfig'
+	#bash -c './sai_server'
 
 kill-saithrift-server:
 	-docker kill dash-saithrift-server-$(USER)
