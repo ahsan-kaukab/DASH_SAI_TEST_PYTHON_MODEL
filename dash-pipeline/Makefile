@@ -368,7 +368,7 @@ DOCKER_RUN_SAITHRIFT_SRVR =\
 	-v $(PWD)/SAI/SAI/inc:/usr/include/sai \
 	-v $(PWD)/SAI:/SAI \
 	-v $(PWD)/SAI/SAI/meta:/meta \
-	-w /SAI/SAI/test/saithriftv2 \
+	-w /SAI/SAI/meta \
 	-e LD_LIBRARY_PATH=/SAI/lib:/usr/local/lib \
 	$(DOCKER_SAITHRIFT_BLDR_IMG)
 	#-w /SAI/rpc/usr/sbin \
@@ -391,6 +391,8 @@ DOCKER_RUN_SAITHRIFT_SRVR =\
 run-saithrift-server:
 	#docker build -f $(PWD)/$(PY_SRC_DIR)/Saithrift-server-Dockerfile -t saiserver-builder .
 	$(DOCKER_RUN_SAITHRIFT_SRVR) \
+	#bash -c 'sudo make clean & sudo make sai_server' \
+	#bash -c 'sudo make sai_server'
 	#bash -c './saiserver'
 	#bash -c 'sudo cp -r /SAI/SAI/experimental/* /usr/include/sai/'
 	#bash -c 'cd /app'
