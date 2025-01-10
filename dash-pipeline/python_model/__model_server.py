@@ -146,8 +146,8 @@ class ModelTCPHandler(socketserver.BaseRequestHandler):
             logging.error(f"Error processing request: {e}")
             self.request.sendall(b'\xff')  # Indicate failure
             
-#HOST, PORT = "127.0.1", 9092
-HOST, PORT = "0.0.0.0", 9559
+HOST, PORT = "127.0.1", 9092
+#HOST, PORT = "0.0.0.0", 9559
 #HOST, PORT = "localhost", 46500
 
 with socketserver.TCPServer((HOST, PORT), ModelTCPHandler) as server:

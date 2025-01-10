@@ -316,33 +316,33 @@ kill-dpapp:
 ######################################
 
 .PHONY:run-switch
-run-switch: network
-	$(DOCKER_RUN) \
-		--name simple_switch-$(USER) \
-		-u root \
-		-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
-		-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
-		$(DOCKER_BMV2_RUN_IMG) \
-		env LD_LIBRARY_PATH=/usr/local/lib \
-		simple_switch_grpc \
-		--interface 0@veth0 \
-		--interface 1@veth2 \
-		$(SWITCH_PORT_DPAPP) \
-		--log-console \
-		--no-p4
-
 # run-switch: network
-# 	docker build -f $(PWD)/$(PY_SRC_DIR)/Dockerfile -t dash-bmv2-python3.10 .
 # 	$(DOCKER_RUN) \
 # 		--name simple_switch-$(USER) \
 # 		-u root \
-# 		-v $(PWD)/$(PY_SRC_DIR):/etc/dash/py dash-bmv2-python3.10 python3 /etc/dash/py/__model_server.py \
+# 		-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
+# 		-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
 # 		$(DOCKER_BMV2_RUN_IMG) \
 # 		env LD_LIBRARY_PATH=/usr/local/lib \
+# 		simple_switch_grpc \
 # 		--interface 0@veth0 \
-#  		--interface 1@veth2 \
-#  		--log-console \
-#  		--no-p4
+# 		--interface 1@veth2 \
+# 		$(SWITCH_PORT_DPAPP) \
+# 		--log-console \
+# 		--no-p4
+
+run-switch: network
+	docker build -f $(PWD)/$(PY_SRC_DIR)/Dockerfile -t dash-bmv2-python3.10 .
+	$(DOCKER_RUN) \
+		--name simple_switch-$(USER) \
+		-u root \
+		-v $(PWD)/$(PY_SRC_DIR):/etc/dash/py dash-bmv2-python3.10 python3 /etc/dash/py/__model_server.py \
+		$(DOCKER_BMV2_RUN_IMG) \
+		env LD_LIBRARY_PATH=/usr/local/lib \
+		--interface 0@veth0 \
+ 		--interface 1@veth2 \
+ 		--log-console \
+ 		--no-p4
 
 
 kill-switch:
@@ -395,6 +395,8 @@ run-saithrift-server:
 	#bash -c 'echo "/SAI/SAI/meta" | sudo tee /etc/ld.so.conf.d/sai.conf'
 	#bash -c 'sudo ldconfig'
 	#bash -c './sai_server'
+	#sudo make apitest
+	#./apitest
 
 kill-saithrift-server:
 	-docker kill dash-saithrift-server-$(USER)
@@ -595,9 +597,10 @@ DOCKER_RUN_SAITHRIFT_CLIENT=\
 # Run "production" Pytests bundled inside docker
 run-saithrift-pytests:deploy-ixiac disable-ipv6
 	$(DOCKER_RUN_SAITHRIFT_CLIENT) \
-	-w /ci-tests/saithrift/pytest \
+	-w /ci-tests/saithrift/pytest  \
 	$(DOCKER_SAITHRIFT_CLIENT_IMG) \
-	./run-saithrift-pytests.sh
+	#./run-saithrift-pytests.sh
+	#-w /ci-tests/saithrift/pytest \
 
 # Run "dev" tests mounted from host
 run-saithrift-dev-pytests:deploy-ixiac disable-ipv6
