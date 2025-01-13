@@ -36,4 +36,6 @@ RUN echo "$user ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
 
 USER $user
 
+COPY ../SAI/SAI/data/TAM/ /etc/dash/py/generated
+
 CMD ["/bin/bash"]

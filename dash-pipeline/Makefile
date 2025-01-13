@@ -332,13 +332,13 @@ kill-dpapp:
 # 		--no-p4
 
 run-switch: network
-	docker build -f $(PWD)/$(PY_SRC_DIR)/Dockerfile -t dash-bmv2-python3.10 .
+	#docker build -f $(PWD)/$(PY_SRC_DIR)/Dockerfile -t dash-bmv2-python3.10 .
 	$(DOCKER_RUN) \
 		--name simple_switch-$(USER) \
 		-u root \
-		-v $(PWD)/$(PY_SRC_DIR):/etc/dash/py dash-bmv2-python3.10 python3 /etc/dash/py/__model_server.py \
 		$(DOCKER_BMV2_RUN_IMG) \
 		env LD_LIBRARY_PATH=/usr/local/lib \
+		simple_switch_grpc \
 		--interface 0@veth0 \
  		--interface 1@veth2 \
  		--log-console \
@@ -357,40 +357,41 @@ saithrift-server: docker-saithrift-bldr-image-exists
 	$(DOCKER_RUN_SAITHRIFT_BLDR) \
 	    make $@
 
-DOCKER_RUN_SAITHRIFT_SRVR =\
-	docker run \
-	--rm \
-	$(DOCKER_FLAGS) \
-	--net=host \
-	--name dash-saithrift-server-$(USER) \
-	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
-	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
-	-v $(PWD)/SAI/SAI/inc:/usr/include/sai \
-	-v $(PWD)/SAI:/SAI \
-	-v $(PWD)/SAI/SAI/meta:/meta \
-	-w /SAI/SAI/meta \
-	-e LD_LIBRARY_PATH=/SAI/lib:/usr/local/lib \
-	$(DOCKER_SAITHRIFT_BLDR_IMG)
-	#-w /SAI/rpc/usr/sbin \
-
-
 # DOCKER_RUN_SAITHRIFT_SRVR =\
 # 	docker run \
 # 	--rm \
 # 	$(DOCKER_FLAGS) \
 # 	--net=host \
 # 	--name dash-saithrift-server-$(USER) \
-# 	saiserver-builder /bin/bash
+# 	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline.json:/etc/dash/dash_pipeline.json \
+# 	-v $(PWD)/$(P4_OUTDIR)/dash_pipeline_p4rt.txt:/etc/dash/dash_pipeline_p4rt.txt \
+# 	-v $(PWD)/SAI/SAI/inc:/usr/include/sai \
 # 	-v $(PWD)/SAI:/SAI \
 # 	-v $(PWD)/SAI/SAI/meta:/meta \
-# 	-w /SAI/rpc/usr/sbin \
+# 	-w /SAI/SAI/meta \
 # 	-e LD_LIBRARY_PATH=/SAI/lib:/usr/local/lib \
 # 	$(DOCKER_SAITHRIFT_BLDR_IMG)
-	#-v $(PWD)/$(PY_SRC_DIR):/etc/dash/py dash-bmv2-python3.10 python3 /etc/dash/py/__model_server.py \
+# 	#-w /SAI/rpc/usr/sbin \
+
+
+DOCKER_RUN_SAITHRIFT_SRVR =\
+	docker run \
+	--rm \
+	$(DOCKER_FLAGS) \
+	--net=host \
+	--name dash-saithrift-server-$(USER) \
+	-v $(PWD)/$(PY_SRC_DIR):/etc/dash/py dash-bmv2-python3.10 python3 /etc/dash/py/__model_server.py \
+	-v $(PWD)/SAI:/SAI \
+	-v $(PWD)/SAI/SAI/meta:/meta \
+	-w /SAI/rpc/usr/sbin \
+	-e LD_LIBRARY_PATH=/SAI/lib:/usr/local/lib \
+	$(DOCKER_SAITHRIFT_BLDR_IMG)
 
 run-saithrift-server:
 	#docker build -f $(PWD)/$(PY_SRC_DIR)/Saithrift-server-Dockerfile -t saiserver-builder .
+	docker build -f $(PWD)/$(PY_SRC_DIR)/Dockerfile -t dash-bmv2-python3.10 .
 	$(DOCKER_RUN_SAITHRIFT_SRVR) \
+	#bash -c './saiserver'
 	#bash -c 'sudo make clean && sudo make sai_server'
 	#bash -c 'echo "/SAI/SAI/meta" | sudo tee /etc/ld.so.conf.d/sai.conf'
 	#bash -c 'sudo ldconfig'
