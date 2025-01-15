@@ -37,5 +37,6 @@ RUN echo "$user ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers
 USER $user
 
 COPY ../SAI/SAI/data/TAM/ /etc/dash/py/generated
+RUN python3.10 -m pip install bitarray scapy grpcio protobuf==3.20.0 p4 p4runtime
 
 CMD ["/bin/bash"]

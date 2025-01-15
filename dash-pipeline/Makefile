@@ -368,10 +368,10 @@ saithrift-server: docker-saithrift-bldr-image-exists
 # 	-v $(PWD)/SAI/SAI/inc:/usr/include/sai \
 # 	-v $(PWD)/SAI:/SAI \
 # 	-v $(PWD)/SAI/SAI/meta:/meta \
-# 	-w /SAI/SAI/meta \
+# 	-w /SAI/rpc/usr/sbin \
 # 	-e LD_LIBRARY_PATH=/SAI/lib:/usr/local/lib \
 # 	$(DOCKER_SAITHRIFT_BLDR_IMG)
-# 	#-w /SAI/rpc/usr/sbin \
+	#-w /SAI/rpc/usr/sbin \
 
 
 DOCKER_RUN_SAITHRIFT_SRVR =\
@@ -380,24 +380,32 @@ DOCKER_RUN_SAITHRIFT_SRVR =\
 	$(DOCKER_FLAGS) \
 	--net=host \
 	--name dash-saithrift-server-$(USER) \
-	-v $(PWD)/$(PY_SRC_DIR):/etc/dash/py dash-bmv2-python3.10 python3 /etc/dash/py/__model_server.py \
 	-v $(PWD)/SAI:/SAI \
 	-v $(PWD)/SAI/SAI/meta:/meta \
-	-w /SAI/rpc/usr/sbin \
+	-w /SAI/SAI/meta \
 	-e LD_LIBRARY_PATH=/SAI/lib:/usr/local/lib \
 	$(DOCKER_SAITHRIFT_BLDR_IMG)
+	#-v $(PWD)/$(PY_SRC_DIR):/etc/dash/py dash-bmv2-python3.10 python3 /etc/dash/py/__model_server.py \
 
 run-saithrift-server:
-	#docker build -f $(PWD)/$(PY_SRC_DIR)/Saithrift-server-Dockerfile -t saiserver-builder .
-	docker build -f $(PWD)/$(PY_SRC_DIR)/Dockerfile -t dash-bmv2-python3.10 .
+	docker build -f $(PWD)/$(PY_SRC_DIR)/Saithrift-server-Dockerfile -t saiserver-builder .
+	#docker build -f $(PWD)/$(PY_SRC_DIR)/Dockerfile -t dash-bmv2-python3.10 .
 	$(DOCKER_RUN_SAITHRIFT_SRVR) \
 	#bash -c './saiserver'
 	#bash -c 'sudo make clean && sudo make sai_server'
+	# sudo make sai_rpc_frontend
+	# ./sai_rpc_frontend
 	#bash -c 'echo "/SAI/SAI/meta" | sudo tee /etc/ld.so.conf.d/sai.conf'
 	#bash -c 'sudo ldconfig'
 	#bash -c './sai_server'
 	#sudo make apitest
 	#./apitest
+	# cd /SAI/src/
+	# cd grpc 
+	# make && make install
+	# sudo apt-get install libgrpc++-dev
+	# sudo apt-get install build-essential autoconf libtool pkg-config
+	# make all
 
 kill-saithrift-server:
 	-docker kill dash-saithrift-server-$(USER)
