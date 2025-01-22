@@ -2,13 +2,12 @@ CXXFLAGS_COMMON=
 CXXFLAGS_COMMON+= -ansi
 CXXFLAGS_COMMON+= -fPIC
 CXXFLAGS_COMMON+= -pipe
-CXXFLAGS_COMMON+= -std=c++11
+CXXFLAGS_COMMON+= -std=c++14
 CXXFLAGS_COMMON+= -Wall
 CXXFLAGS_COMMON+= -Wcast-align
 CXXFLAGS_COMMON+= -Wcast-qual
 CXXFLAGS_COMMON+= -Wconversion
 CXXFLAGS_COMMON+= -Wdisabled-optimization
-CXXFLAGS_COMMON+= -Werror
 CXXFLAGS_COMMON+= -Wextra
 CXXFLAGS_COMMON+= -Wfloat-equal
 CXXFLAGS_COMMON+= -Wformat=2
@@ -47,7 +46,10 @@ CXXFLAGS_COMMON+= -Wno-unused-result
 
 # Sources from OCP SAI Repo:
 SAI_DIR=../SAI/meta/
-SAI_INC=-I../SAI/meta -I../SAI/inc -I../SAI/experimental
+SAI_INC=-I../SAI/meta -I../SAI/inc -I../SAI/experimental -I./PI/include -I./grpc/include \
+		-I./grpc/third_party/bloaty/third_party/abseil-cpp/ -I./p4runtime/proto -I../lib \
+		-I./protobuf/src -I ./grpc/third_party/abseil-cpp
+		#./grpc/third_party/abseil-cpp
 
 SAI_OBJS=saimetadatautils.o saimetadata.o saiserialize.o
 SAI_OBJS_PATHS=$(addprefix $(SAI_DIR)/,$(SAI_OBJS))

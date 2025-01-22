@@ -388,8 +388,8 @@ DOCKER_RUN_SAITHRIFT_SRVR =\
 	#-v $(PWD)/$(PY_SRC_DIR):/etc/dash/py dash-bmv2-python3.10 python3 /etc/dash/py/__model_server.py \
 
 run-saithrift-server:
-	docker build -f $(PWD)/$(PY_SRC_DIR)/Saithrift-server-Dockerfile -t saiserver-builder .
-	#docker build -f $(PWD)/$(PY_SRC_DIR)/Dockerfile -t dash-bmv2-python3.10 .
+	#docker build -f $(PWD)/$(PY_SRC_DIR)/Saithrift-server-Dockerfile -t saiserver-builder .
+	docker build -f $(PWD)/$(PY_SRC_DIR)/Dockerfile -t dash-bmv2-python3.10 .
 	$(DOCKER_RUN_SAITHRIFT_SRVR) \
 	#bash -c './saiserver'
 	#bash -c 'sudo make clean && sudo make sai_server'
